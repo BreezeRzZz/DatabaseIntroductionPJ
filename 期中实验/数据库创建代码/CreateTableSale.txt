@@ -1,0 +1,7 @@
+create table sale
+(	ISBN nchar(13) not null,
+ 	bookID serial primary key,
+ 	price decimal check(price>0),
+ 	inventory integer check(inventory>=0),
+ 	foreign key (ISBN) references book
+);

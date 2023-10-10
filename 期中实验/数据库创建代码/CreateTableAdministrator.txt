@@ -1,0 +1,11 @@
+create type gen as enum('男','女');
+create type perm as enum('超级管理员','普通管理员');
+create table administrator
+(	username varchar(20) primary key,
+ 	password nchar(32) not null,
+ 	type	 perm default '普通管理员',
+ 	name	 varchar(20),
+ 	jobnumber int unique,
+ 	gender gen,
+ 	age int check(age>0)
+);

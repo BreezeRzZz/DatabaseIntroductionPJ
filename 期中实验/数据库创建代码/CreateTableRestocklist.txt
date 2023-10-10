@@ -1,0 +1,12 @@
+create type stat as enum('未付款','已付款','已退货')；
+create type isarrived as enum('未到货','已到货');
+create table restockList
+(	ISBN nchar(13) not null,
+ 	restockprice decimal check(restockprice>0),
+ 	restocknumber int check(restocknumber>0),
+  	remain int check(remain>=0),
+  	orderID serial primary key,
+ 	status stat default '未付款',
+ 	arrival isarrived default '未到货',
+ 	foreign key (ISBN) references book
+ );

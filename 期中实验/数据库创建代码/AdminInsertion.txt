@@ -1,0 +1,2 @@
+insert into administrator
+	values('postgres','b602e8e47daca93f6cc0060037f2e0cd','超级管理员','张孜锐',1,'男',19);

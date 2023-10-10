@@ -1,0 +1,6 @@
+create table book
+(	ISBN nchar(13) primary key,
+ 	title varchar(50) not null,
+ 	author varchar(30),
+ 	press varchar(30)
+);

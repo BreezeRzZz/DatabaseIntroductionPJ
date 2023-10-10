@@ -1,0 +1,56 @@
+进入数据库：$HOME/pgsql/bin/psql similarity
+退出数据库：Ctrl+D
+
+重建PostgreSQL：
+①停止数据库：
+$HOME/pgsql/bin/pg_ctl -D $HOME/pgsql/data -l logfile stop
+②删除数据库：
+rm -r $HOME/pgsql
+③设置configure
+cd postgresql-9.1.3
+./configure --enable-depend --enable-cassert --enable-debug CFLAGS="-O0" --prefix=$HOME/pgsql
+④重新编译安装
+make
+make install
+(或一条make && make install)
+⑤初始化数据库
+（需要删除已有的—locale=C文件夹)
+$HOME/pgsql/bin/initdb -D $HOME/pgsql/data —locale=C
+⑥启动服务器
+/home/postgre/pgsql/bin/pg_ctl -D —locale=C -l logfile start
+⑦连接服务器，创建similarity数据库
+$HOME/pgsql/bin/psql postgres
+create database similarity;
+⑧退出数据库，导入数据到similarity数据库
+$HOME/pgsql/bin/psql -d similarity -f /home/postgre/similarity_data.sql
+
+查询大数据集：
+先打开计时：\timing
+查询：
+①select count(*) from restaurantphone rp, addressphone ap where levenshtein_distance(rp.phone, ap.phone) < 4;
+②select count(*) from restaurantaddress ra, restaurantphone rp where levenshtein_distance(ra.name, rp.name) < 3;
+③select count(*) from restaurantaddress ra, addressphone ap where levenshtein_distance(ra.address, ap.address) < 4;
+④select count(*) from restaurantphone rp, addressphone ap where jaccard_index(rp.phone, ap.phone) > .6;
+⑤select count(*) from restaurantaddress ra, restaurantphone rp where jaccard_index(ra.name, rp.name) > .65;
+⑥select count(*) from restaurantaddress ra, addressphone ap where jaccard_index(ra.address, ap.address) > .8;
+查询结果写入到文件：
+①
+$HOME/pgsql/bin/psql similarity -c "SELECT ra.address,
+ap.address, ra.name, ap.phone FROM restaurantaddress ra, addressphone ap
+WHERE levenshtein_distance(ra.address, ap.address) < 4 AND (ap.address
+LIKE '%Berkeley%' OR ap.address LIKE '%Oakland%') ORDER BY 1, 2, 3,
+4;" > levenshtein.txt
+②
+$HOME/pgsql/bin/psql similarity -c "SELECT rp.phone, ap.phone, rp.name, ap.address
+FROM restaurantphone rp, addressphone ap
+WHERE jaccard_index(rp.phone, ap.phone) > .6 AND
+(ap.address LIKE '%Berkeley%' OR ap.address LIKE '%Oakland %')
+ORDER BY 1, 2, 3, 4;" > jaccard.txt
+③
+$HOME/pgsql/bin/psql similarity -c "SELECT ra.name, rp.name, ra.address, ap.address, rp.phone, ap.phone
+FROM restaurantphone rp, restaurantaddress ra, addressphone ap
+WHERE jaccard_index(rp.phone, ap.phone) >= .55 AND
+levenshtein_distance(rp.name, ra.name) <= 5 AND
+jaccard_index(ra.address, ap.address) >= .6 AND
+(ap.address LIKE '%Berkeley%' OR ap.address LIKE
+'%Oakland%')ORDER BY 1, 2, 3, 4, 5, 6;" > combined.txt

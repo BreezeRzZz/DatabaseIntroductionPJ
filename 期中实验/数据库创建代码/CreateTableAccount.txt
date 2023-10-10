@@ -1,0 +1,6 @@
+create table account
+(
+	diff numeric(10,2) check(diff<>0),
+	difftime timestamp default current_timestamp,
+	primary key(diff,difftime)
+);
